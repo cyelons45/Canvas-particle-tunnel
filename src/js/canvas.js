@@ -6,7 +6,7 @@ const c = canvas.getContext('2d')
 canvas.width = innerWidth
 canvas.height = innerHeight
 
-const mouse = {
+let mouse = {
   x: innerWidth / 2,
   y: innerHeight / 2
 }
@@ -27,12 +27,14 @@ addEventListener('resize', () => {
 })
 
 // Objects
-class Object {
-  constructor(x, y, radius, color) {
+class Particle {
+  constructor(x, y, radius, color,velocity) {
     this.x = x
     this.y = y
     this.radius = radius
     this.color = color
+    this.velocity = velocity
+    this.ttl=700
   }
 
   draw() {
@@ -45,29 +47,64 @@ class Object {
 
   update() {
     this.draw()
+    this.x += this.velocity.x;
+    this.y += this.velocity.y;
+    this.ttl-=1
+
   }
 }
 
 // Implementation
-let objects
+let particles
 function init() {
-  objects = []
+  particles = []
+  // let radius = 5
+  // let radian=Math.PI*2/30
+  // for (let i = 0; i < 30; i++) {
+  //   let x = canvas.width / 2;
+  //   let y = canvas.height / 2;
+  //   particles.push(new Particle(x, y, radius, `hsl(0,50%,50%)`, {
+  //     x: Math.cos(radian * i),
+  //     y: Math.sin(radian * i)
+  //   }))
+  // }
+}
 
-  for (let i = 0; i < 400; i++) {
-    // objects.push()
+let hue=0
+let hueRadians = 0
+let particleCount=30
+function generateRings () {
+  hue=Math.sin(hueRadians)
+  let radius = 5
+  let radian=(Math.PI*2)/particleCount
+  setTimeout(generateRings, 200)
+
+  for (let i = 0; i < particleCount; i++) {
+    let x = mouse.x;
+    let y = mouse.y;
+    particles.push(new Particle(x, y, radius, `hsl(${Math.abs(hue *360)},50%,50%)`, {
+      x: Math.cos(radian * i)*2,
+      y: Math.sin(radian * i)*2
+    }))
   }
+hueRadians+=0.01
 }
 
 // Animation Loop
 function animate() {
   requestAnimationFrame(animate)
-  c.clearRect(0, 0, canvas.width, canvas.height)
-
-  c.fillText('HTML CANVAS BOILERPLATE', mouse.x, mouse.y)
-  // objects.forEach(object => {
-  //  object.update()
-  // })
+  c.fillStyle='rgba(0,0,0,0.5)'
+  c.fillRect(0, 0, canvas.width, canvas.height)
+  
+  particles.forEach((particle,i )=> {
+    if (particle.ttl < 0) {
+      particles.splice(i,1)
+    } else {
+      particle.update()
+    }
+  })
 }
 
 init()
 animate()
+generateRings ()
